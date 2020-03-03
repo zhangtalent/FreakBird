@@ -1,0 +1,236 @@
+<html  style="width:100%;height:100%;">
+
+	
+	<head>
+			<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	</head>
+
+	<body style="width:100%;height:100%;">
+		<canvas style="background-color:87CEFA;" id="cv"></canvas>
+	</body>
+	
+	
+	<script>
+		var width = document.body.clientWidth;
+		var height = document.body.clientHeight;
+		
+		//0透明1黑色2红色3黄色4绿色5蓝色6白色7灰色
+		var man = [
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,0],
+			[0,0,3,3,3,0,0,0,0,0,0,0,0,0,3,3,3,0,0,0],
+			[0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+			[0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+			[0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+			[0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0],
+			[0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+			[0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+			[0,3,3,3,3,1,1,1,3,3,3,3,1,1,1,3,3,3,0,0],
+			[0,3,3,3,1,6,6,1,3,3,3,3,1,6,6,1,3,3,0,0],
+			[0,3,3,3,3,1,1,1,3,3,3,3,1,1,1,3,3,3,0,0],
+			[0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+			[0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0],
+			[0,0,0,0,3,3,3,3,1,1,3,1,3,3,3,0,0,0,0,0],
+			[0,0,0,0,0,3,3,3,1,3,3,1,3,3,0,0,0,0,0,0],
+			[0,0,0,0,0,0,3,1,1,1,1,1,3,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,3,3,3,3,3,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		];
+		//水管两端
+		var pipeEdge = [
+			[4,4,4,4,4,4,4,4,4,4],
+			[1,4,4,4,4,4,4,4,4,1]
+		];
+		var click = 0;
+		//一层的水管皮肤
+		var pipeLine = [0,1,4,4,4,4,4,4,1,0];
+		//颜色集合
+		var colors=["#","black","red","yellow","green","blue","white","gray"];
+		var cx = document.getElementById("cv");
+		cx.width = width;
+		cx.height = height;
+		//最大像素尺寸
+		var MaxEdgeSize = parseInt(height/80);
+		var ctx=cx.getContext("2d") //create 2d object
+		//游戏按钮坐标
+		var startbtX = width/2-150;
+		var startbtY = height-150;
+		console.log(startbtX,startbtY)
+		//是否再游戏
+		var isgaming = 0;
+		//每个管子的位置集合
+		var pipes = [];
+		//人物位置
+		var manpos = [];
+		//速度
+		var speed = 1;
+		//计算
+		var count = 0;
+		//游戏运行
+		var interval = setInterval(gaming, 100); //启动,func不能使用括号
+		clearInterval(interval );//停止
+		function gaming(){
+			if(count%300 == 0){count = 0;speed+=1;}
+			count++;
+			//画 清画布
+			var size = pipes.length;
+			ctx.clearRect(0,0,cx.width,cx.height);  
+			for(var i = 0;i < pipes.length;i++){
+				if(pipes[i][3]<0){
+				//增加柱子
+					var firstPX = pipes[size-1][1]+parseInt(Math.random()*30);
+					var secondPY = height/2+MaxEdgeSize*(parseInt(Math.random()*10)+15)+50;
+					pipes[i] = (drawpipe(width+120+parseInt(Math.random()*30),0,MaxEdgeSize,parseInt(Math.random()*10)+23))
+					pipes.push(drawpipe(width+120+parseInt(Math.random()*30),secondPY,MaxEdgeSize,parseInt(Math.random()*10)+20))
+					continue;
+				}
+				console.log("ccc",click);
+				if(pipes[i][0] == 0){
+					if(manpos[3]>=pipes[i][1]&&manpos[3]<=pipes[i][3]&&manpos[0]<=pipes[i][2]){
+							console.log("右上边碰到了",manpos[3],pipes[i][1],pipes[i][3])
+							startgames(1);
+					}else{
+						pipes[i] = (drawpipe(pipes[i][1]-10*speed,pipes[i][0],MaxEdgeSize,pipes[i][4]))
+					}
+				}
+				else{
+					if(manpos[3]>=pipes[i][1]&&manpos[3]<=pipes[i][3]&&manpos[2]>=pipes[i][0]){
+							console.log("右下边碰到了",manpos[3]>=pipes[i][1],manpos[3]<=pipes[i][3],manpos[2]>=pipes[i][0],manpos[2]<=pipes[i][2])
+							console.log(manpos,pipes[i])
+							startgames(1);
+					}else{
+						//console.log(manpos,pipes[i])
+						pipes[i] = (drawpipe(pipes[i][1]-10*speed,pipes[i][0],MaxEdgeSize,pipes[i][4]))
+					}
+				
+				}
+				
+			}
+			if(click == 1){
+					manpos = drawman(100,manpos[0] - 120,MaxEdgeSize-5);
+					console.log("运行")
+					click = 0;
+			}else{
+					manpos = drawman(100,manpos[0] + 20,MaxEdgeSize-5);
+			}
+		} //定时任务	
+		
+		//点击事件
+		cx.onclick = function(event){
+			//var event = event || window.event;
+			var x = event.pageX - cx.getBoundingClientRect().left;
+			var y = event.pageY - cx.getBoundingClientRect().top;
+            var pos = {'x':x,'y':y}
+			console.log(pos.x,pos.y)
+			click = 1;
+			//是否触发游戏开始
+			if(pos.x>=startbtX-50&&pos.x<=startbtX+250&&pos.y>=startbtY-50&&pos.y<=startbtY+150&&isgaming==0){
+				//alert('Game start')
+				//画 清画布
+				ctx.clearRect(0,0,cx.width,cx.height);  
+				manpos = drawman(100,height/2-50,MaxEdgeSize-5);
+				var firstPX = 200+parseInt(Math.random()*30);
+				var secondPY = height/2+MaxEdgeSize*(parseInt(Math.random()*10)+15)+50;
+				pipes.push(drawpipe(firstPX,0,MaxEdgeSize,parseInt(Math.random()*10)+20))
+				pipes.push(drawpipe(firstPX+MaxEdgeSize*10+120+parseInt(Math.random()*30),0,MaxEdgeSize,parseInt(Math.random()*10)+20))
+				pipes.push(drawpipe(firstPX+MaxEdgeSize*10+120+parseInt(Math.random()*30),secondPY,MaxEdgeSize,parseInt(Math.random()*10)+20))
+				interval = setInterval(gaming, 100); //启动,func不能使用括号
+				isgaming = 1;
+			}
+			
+		}
+		
+		
+		//开始游戏按钮设定
+		function startgames(flag){
+			//flag为0表示第一次玩，1为失败重新游戏	
+			if(flag == 0){
+				ctx.font="70px Arial";
+				ctx.font="70px Arial";
+				ctx.fillStyle=colors[6];
+				ctx.fillText("Start Game",startbtX,startbtY);
+				ctx.fillText("张天才的笨蛋狗子",startbtX-130,startbtY-300);
+			}else{
+				isgaming = 0;
+				pipes = [];
+				manpos = [];
+				speed = 1;
+				count = 0;
+				ctx.font="70px Arial";
+				ctx.font="70px Arial";
+				ctx.fillStyle=colors[6];
+				ctx.fillText("游戏结束",startbtX-130,startbtY-300);
+				ctx.fillText("Restart Game",startbtX,startbtY);
+				clearInterval(interval );//停止
+			}
+			
+		}
+		
+		
+		//drawman(100,height/2-50,(MaxEdgeSize-10));
+		//drawpipe(150,0,MaxEdgeSize,35);
+		//console.log(drawpipe(150+MaxEdgeSize*20,0,MaxEdgeSize,20));
+		//drawpipe(150+MaxEdgeSize*10+50,height/2+MaxEdgeSize*20,MaxEdgeSize,25);
+		startgames(0);
+		
+		//画人物函数
+		function drawman(startX,startY,blocksize){
+			var offsetY = 0;
+			for(var i = 0;i<20;i++){
+				offsetY = i*blocksize;
+				for(var j = 0;j<20;j++){
+					if(man[i][j]!=0){
+						ctx.fillStyle=colors[man[i][j]];
+						ctx.fillRect(startX+j*blocksize,startY+offsetY,blocksize,blocksize);	
+					}
+				}
+			}
+			//返回上左下右坐标
+			return [startY,startX,startY+offsetY+blocksize,startX+20*blocksize];
+		}	
+		
+		
+		
+		//画水管函数：pipeheight是需要的水管高度
+		function drawpipe(startX,startY,blocksize,pipeheight){
+			var offsetY = 0;
+			//画上部分
+			for(var i = 0;i<2;i++){
+				offsetY = i*blocksize;
+				for(var j = 0;j<10;j++){
+					if(pipeEdge[i][j]!=0){
+						ctx.fillStyle=colors[pipeEdge[i][j]];
+						ctx.fillRect(startX+j*blocksize,startY+offsetY,blocksize,blocksize);	
+					}
+				}
+			}
+			var middleOffsetY = 0;
+			//水管中间
+			for(var i = 0;i<pipeheight;i++){
+				middleOffsetY = offsetY + i*blocksize;
+				for(var j = 0;j<10;j++){
+					if(pipeLine[j]!=0){
+						ctx.fillStyle=colors[pipeLine[j]];
+						ctx.fillRect(startX+j*blocksize,startY+middleOffsetY,blocksize,blocksize);	
+					}
+				}
+			}
+			//底部
+			var bottomOffsetY = 0;
+			for(var i = 0;i<2;i++){
+				bottomOffsetY = middleOffsetY + i*blocksize;
+				for(var j = 0;j<10;j++){
+					if(pipeEdge[i][j]!=0){
+						ctx.fillStyle=colors[pipeEdge[i][j]];
+						ctx.fillRect(startX+j*blocksize,startY+bottomOffsetY,blocksize,blocksize);	
+					}
+				}
+			}
+			//返回上左下右坐标高度
+			return [startY,startX,startY+bottomOffsetY+blocksize,startX+10*blocksize,pipeheight];
+		}	
+		
+	</script>
+	
+</html>
